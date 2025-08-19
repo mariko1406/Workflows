@@ -212,11 +212,18 @@ glm_model_analysis <- function(data, biomarkers, group_col, covariates = NULL, g
 
 # Fold change calculation between two groups
 calculate_fold_change <- function(data, group_col, group1, group2) {
-  group1_data <- data %>% filter(.data[[group_col]] == group1)
-  group2_data <- data %>% filter(.data[[group_col]] == group2)
-  
+  group1_data <- data %>%
+    filter(.data[[group_col]] == group1) %>%
+    select(-all_of(group_col)) %>%
+    select(where(is.numeric))
+
+  group2_data <- data %>%
+    filter(.data[[group_col]] == group2) %>%
+    select(-all_of(group_col)) %>%
+    select(where(is.numeric))
+
   geo_mean <- function(x) exp(mean(log(x[x > 0]), na.rm = TRUE))
-  
+
   fold_change <- apply(group1_data, 2, geo_mean) / apply(group2_data, 2, geo_mean)
   log2fc <- log2(fold_change)
   return(log2fc)
